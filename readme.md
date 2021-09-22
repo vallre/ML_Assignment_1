@@ -15,7 +15,7 @@ This repository contains 4 foulders. **data** folder contains a link to an airli
 First, download the dataset from the provided link and put it into **data** folder.
 The main executable of this assignment is the **Assignment1.py**. Ohter executables are used to further analyze the data related to the dataset and the training/testing processes.
 
-Running **Assignment1.py** will preprocesses the dataset, train and test the 4 different machine learning models, and then print model error scores to stdout. The 4 models tested in the this project are Simple Linear Regression, Polynomial Linear Regression of 3 different degrees, Lasso Regression, and Ridge Regression.
+Running **Assignment1.py** will preprocesses the dataset, train and test the 4 different machine learning models, then print model error scores to stdout, and at the end it will show a table of results. The 4 models tested in the this project are Simple Linear Regression, Polynomial Linear Regression of 3 different degrees, Lasso Regression, and Ridge Regression.
 
 Running **data_profile.py** will generate the dataset profile in **docs** folder using pandas_profiling module.
 
