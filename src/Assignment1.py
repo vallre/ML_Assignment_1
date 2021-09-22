@@ -113,18 +113,23 @@ linReg.fit(x_train_df, y_train_df)
 y_pred = linReg.predict(x_test_df)
 
 # it is a regression problem, so we cannot calculate accuracy, recall, F1, etc.
+print("-"*15)
 print('Simple Linear regression:')
 print('Mean Absolute Error:', metrics.mean_absolute_error(y_test_df, y_pred))                                   # 14.173306569086455
 print('Mean Squared Error:', metrics.mean_squared_error(y_test_df, y_pred))                                     # 1616.1465293478113
 print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test_df, y_pred)))                       # 40.20132497005306
 scores = cross_val_score(linReg, x_train_df, y_train_df, scoring="neg_mean_squared_error", cv=10)
-print('Cross-validation MSE = {:.2e}(+/- {:.2e})'.format( -scores.mean(), scores.std()), end="\n\n")            # 2.15e+03(+/- 6.73e+02)
-
+print('Cross-validation MSE on train set = {:.2e}(+/- {:.2e})'.format( -scores.mean(), scores.std()), end="\n\n")            # 2.15e+03(+/- 6.73e+02)
+                                                                                                                # these and the following numbers were recorded before removal of the "outliers" from the Delay
 # error is quite big (relatively speaking)
 # both train and test error is big -> underfitting? need more complex models
 
+# after printing, let's collect the metrics into a table
+metrics_table = {}
+metrics_table["Simple Linear regression"] = {"MAE" : round(metrics.mean_absolute_error(y_test_df, y_pred), 3), "MSE" : round(metrics.mean_squared_error(y_test_df, y_pred), 3), "RMSE" : round(np.sqrt(metrics.mean_squared_error(y_test_df, y_pred)), 3), "Train MSE" : round(-scores.mean(), 3)}
+
 # now, let's try polynomial regression
-degrees = [2] # careful, this takes a lot of memory
+degrees = [2, 3, 4] # careful, this takes a lot of memory
 for i in range(len(degrees)):
     polFeat = PolynomialFeatures(degree=degrees[i])
     linReg = LinearRegression()
@@ -135,18 +140,22 @@ for i in range(len(degrees)):
 
     y_pred = linReg.predict(polFeat.transform(x_test_df))
     
+    print("-"*15)
     print(f"Polynomial degree: {degrees[i]}")
     print('Mean Absolute Error:', metrics.mean_absolute_error(y_test_df, y_pred)) 
     print('Mean Squared Error:', metrics.mean_squared_error(y_test_df, y_pred)) 
     print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test_df, y_pred)))
-    scores = cross_val_score(linReg, pol_x_train, y_train_df, scoring="neg_mean_squared_error", cv=5)
-    print('Cross-validation MSE = {:.2e}(+/- {:.2e})'.format( -scores.mean(), scores.std()), end="\n\n")
+    scores = cross_val_score(linReg, pol_x_train, y_train_df, scoring="neg_mean_squared_error", cv=5) # higher cv = longer computation time
+    print('Cross-validation MSE on train set = {:.2e}(+/- {:.2e})'.format( -scores.mean(), scores.std()), end="\n\n")
+    # collect the metrics
+    metrics_table[f"Polynomial degree: {degrees[i]}"] = {"MAE" : round(metrics.mean_absolute_error(y_test_df, y_pred), 3), "MSE" : round(metrics.mean_squared_error(y_test_df, y_pred), 3), "RMSE" : round(np.sqrt(metrics.mean_squared_error(y_test_df, y_pred)), 3), "Train MSE" : round(-scores.mean(), 3)}
+
 del(polFeat, linReg, pol_x_train, y_pred, scores)
 # best degree seems to be 2:
 #   Mean Absolute Error: 13.613446089710846
 #   Mean Squared Error: 1602.4904591464808
 #   Root Mean Squared Error: 40.03111863471318
-#   Cross-validation MSE = 2.15e+03(+/- 3.28e+02)
+#   Cross-validation MSE on train set = 2.15e+03(+/- 3.28e+02)
 # however, both train and test errors are high
 # higher degree results in higher errors; starting from degree 4, cross-validation error starts to increase
 # btw, scalling increased the error almost unnoticeably
@@ -189,22 +198,48 @@ lasso = Lasso(0.001)
 lasso.fit(x_train_df, y_train_df)
 y_pred = lasso.predict(x_test_df)
 
+print("-"*15)
 print('Lasso Regression:')
 print('Mean Absolute Error:', metrics.mean_absolute_error(y_test_df, y_pred))                           # 14.175441290741455                             
 print('Mean Squared Error:', metrics.mean_squared_error(y_test_df, y_pred))                             # 1616.1501826449899       
 print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test_df, y_pred)))               # 40.20137040754942       
 scores = cross_val_score(lasso, x_train_df, y_train_df, scoring="neg_mean_squared_error", cv=5)
-print('Cross-validation MSE = {:.2e}(+/- {:.2e})'.format( -scores.mean(), scores.std()), end="\n\n")    # 2.15e+03(+/- 3.27e+02)
+print('Cross-validation MSE on train set = {:.2e}(+/- {:.2e})'.format( -scores.mean(), scores.std()), end="\n\n")    # 2.15e+03(+/- 3.27e+02)
+# collect the metrics
+metrics_table["Lasso Regression"] = {"MAE" : round(metrics.mean_absolute_error(y_test_df, y_pred), 3), "MSE" : round(metrics.mean_squared_error(y_test_df, y_pred), 3), "RMSE" : round(np.sqrt(metrics.mean_squared_error(y_test_df, y_pred)), 3), "Train MSE" : round(-scores.mean(), 3)}
 
 ridge = Ridge(0.001)
 ridge.fit(x_train_df, y_train_df)
 y_pred = ridge.predict(x_test_df)
 
+print("-"*15)
 print('Ridge Regression:')
 print('Mean Absolute Error:', metrics.mean_absolute_error(y_test_df, y_pred))                           # 14.17330658254203        
 print('Mean Squared Error:', metrics.mean_squared_error(y_test_df, y_pred))                             # 1616.1465293630463       
 print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test_df, y_pred)))               # 40.20132497024254        
 scores = cross_val_score(ridge, x_train_df, y_train_df, scoring="neg_mean_squared_error", cv=5)
-print('Cross-validation MSE = {:.2e}(+/- {:.2e})'.format( -scores.mean(), scores.std()), end="\n\n")    # 2.15e+03(+/- 3.27e+02)
+print('Cross-validation MSE on train set = {:.2e}(+/- {:.2e})'.format( -scores.mean(), scores.std()), end="\n\n")    # 2.15e+03(+/- 3.27e+02)
+# collect the metrics
+metrics_table["Ridge Regression"] = {"MAE" : round(metrics.mean_absolute_error(y_test_df, y_pred), 3), "MSE" : round(metrics.mean_squared_error(y_test_df, y_pred), 3), "RMSE" : round(np.sqrt(metrics.mean_squared_error(y_test_df, y_pred)), 3), "Train MSE" : round(-scores.mean(), 3)}
 
-# both lasso and ridge are worse than second degree polynomial regression
+# both lasso and ridge are worse than the original simple linear regression
+# Final note: after removing Delay "outliers" the train error improved significantly
+# The best model is Polynomial Degree 3
+
+plt.close()
+# finally, let's export the table
+# column labels are the types of error
+column_labels = list(metrics_table["Ridge Regression"].keys())
+# row labels are the machine learning models
+row_labels = list(metrics_table.keys())
+# construct data row by row
+data = [list(model.values()) for model in metrics_table.values()]
+
+fig, ax = plt.subplots()
+
+ax.axis('off')
+table = ax.table(cellText=data, colLabels=column_labels, rowLabels=row_labels, loc="center")
+table.auto_set_font_size(False)
+table.set_fontsize(12)
+
+plt.show()
